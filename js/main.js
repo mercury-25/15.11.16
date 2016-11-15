@@ -18,10 +18,39 @@ $(function() {
             return this;
         }
 	});
-	var task = new App.Models.Task({
-		title: 'Сходить в магазин',
-		priority:4
-	});
-	var taskView = new App.Views.Task({model: task});
-	console.log(taskView.render().el);
+	App.Collections.Task = Backbone.Collection.extend({
+        model: App.Models.Task
+    });
+    App.Views.Tasks = Backbone.View.extend({
+        tagName: 'ul',
+        render: function() {
+            this.collection.each(this.addOne, this);
+            return this;
+        },
+        addOne: function(task) {
+            var taskView = new App.Views.Task({ model:task });
+            this.$el.append(taskView.render().el);
+        }
+    })
+
+	var tasksCollection = new App.Collections.Task([
+        {
+            title: 'иди в техникум',
+            priority: 4
+        },
+        {
+            title: 'учись',
+            priority: 3
+        },
+        {
+            title: 'приходи домой',
+            priority: 5
+        },
+
+    ])
+
+	var tasksView = new App.Views.Tasks({ collection: tasksCollection});
+	tasksView.render();
+	$('body').html(tasksView.el);
+	
 });
