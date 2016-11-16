@@ -23,6 +23,7 @@ App.Views.Task = Backbone.View.extend({
 		
 	//_.bindAll(this,'editTask','render')	
 	this.model.on ('change', this.render, this);
+	this.model.on ('destroy', this.remove, this);
 	},
 	tagName:'li',
 	template: template('taskTemplate'),
@@ -33,7 +34,15 @@ App.Views.Task = Backbone.View.extend({
 		return this;
 	},
 	events:{
-	  'click .edit': 'editTask'
+	  'click .edit': 'editTask',
+	  'click .delete': 'destroy'
+	},
+	destroy: function (){
+		this.model.destroy();
+		console.log(tasksCollection);
+	},
+	remove: function (){
+		this.$el.remove();
 	},
 	editTask: function () {
 	var newTaskTitle =  prompt('Как переименуем задачу?', this.model.get('title'));
