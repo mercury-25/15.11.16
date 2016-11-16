@@ -1,56 +1,82 @@
 $(function() {
-    window.App = {
-        Models: {},
-        Collections: {},
-        Views: {}
-    };
+	//пространство имён
+	window.App = {
+		Models: {},
+		Collections:{},
+		Views: {}
+	};
+	//шаблон
+	window.template = function(id) {
+	   return _.template( $('#' + id).html() );
+	};
 
-    window.template = function(id) {
-        return _.template( $('#' + id). html() );
-    };
+App.Models.Task = Backbone.Model.extend({
+	validate:function(attrs){
+		if(!$.trim(attrs.title)){
+		return 'Имя задачи должно быть валидным!!';
+	}
+	}
+});
 
-    App.Models.Task = Backbone.Model.extend({});
+App.Views.Task = Backbone.View.extend({
+	initialize: function(){
+		
+	//_.bindAll(this,'editTask','render')	
+	this.model.on ('change', this.render, this);
+	},
+	tagName:'li',
+	template: template('taskTemplate'),
+	render: function () {
+		var template  = this.template(this.model.toJSON());
+		
+		this.$el.html(template );
+		return this;
+	},
+	events:{
+	  'click .edit': 'editTask'
+	},
+	editTask: function () {
+	var newTaskTitle =  prompt('Как переименуем задачу?', this.model.get('title'));
+	//if(!newTaskTitle) return;
+	 this.model.set('title', newTaskTitle);
 
-    App.Views.Task = Backbone.View.extend({
-        tagName: 'li',
-        render: function () {
-            this.$el.html( this.model.get('title'));
-            return this;
-        }
-	});
-	App.Collections.Task = Backbone.Collection.extend({
-        model: App.Models.Task
-    });
-    App.Views.Tasks = Backbone.View.extend({
-        tagName: 'ul',
-        render: function() {
-            this.collection.each(this.addOne, this);
-            return this;
-        },
-        addOne: function(task) {
-            var taskView = new App.Views.Task({ model:task });
-            this.$el.append(taskView.render().el);
-        }
-    })
+	}
+});
+App.Collections.Task = Backbone.Collection.extend({
+	model: App.Models.Task
+});
 
-	var tasksCollection = new App.Collections.Task([
-        {
-            title: 'иди в техникум',
-            priority: 4
-        },
-        {
-            title: 'учись',
-            priority: 3
-        },
-        {
-            title: 'приходи домой',
-            priority: 5
-        },
+App.Views.Tasks = Backbone.View.extend({
+	 tagName: 'ul',
+	 render: function () {
+		  this.collection.each(this.addOne,this);
+		  return this;
+	 },
+	 addOne: function (task) {
+		 // создавать новый дочерний вид 
+		 var taskView = new App.Views.Task({ model: task});
+		 //добавлять его в корневой элемент 
+		 this.$el.append(taskView.render().el);
+	 }
+})
 
-    ])
+window.tasksCollection = new App.Collections.Task([
+{
+	title: 'Сходить на учебу',
+	priority: 4
+},
+{
+	title: 'Сходить в спортзал',
+	priority: 3
+},
+{
+	title: 'Сделать уроки',
+	priority: 5
+},
+]);
+var tasksView = new App.Views.Tasks({collection:  tasksCollection});
 
-	var tasksView = new App.Views.Tasks({ collection: tasksCollection});
-	tasksView.render();
-	$('body').html(tasksView.el);
-	
+
+$('.tasks').html(tasksView.render().el);
+
 });
